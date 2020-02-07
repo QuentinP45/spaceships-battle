@@ -2,6 +2,19 @@
 session_start();
 // déconnexion user
 if (!empty($_SESSION['user_id']) && $_GET['session-off']){
+    // connexion base
+    require_once('../includes/connect_infos.php');
+    require_once('../includes/connect_base.php');
+
+    $sql=
+        'UPDATE joueurs
+        SET estConnecte=0
+        WHERE idJoueur=:user_id'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':user_id',$_SESSION['user_id']);
+    $stmt->execute();
+
     session_destroy();
     session_start();
 // redirection accueil si user connecté
