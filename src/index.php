@@ -1,8 +1,10 @@
 <?php
 session_start();
+// déconnexion user
 if (!empty($_SESSION['user_id']) && $_GET['session-off']){
     session_destroy();
     session_start();
+// redirection accueil si user connecté
 } elseif (!empty($_SESSION['user_id'])) {
     header('Location: homepage.php');
     exit;
@@ -112,36 +114,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // champ password vide
             $errors['password'] = 'Saisir votre mot de passe';
         }
-        // enregistrement du compte en base
+        
         if (count($errors) == 0) {
             // connexion base
             require_once('../includes/connect_infos.php');
             require_once('../includes/connect_base.php');
 
-            $stmt = $pdo->prepare("SELECT motPasse FROM joueurs WHERE loginJoueur=:login");
+            $stmt = $pdo->prepare("SELECT motPasse, estConnecte FROM joueurs WHERE loginJoueur=:login");
             $stmt->bindParam(':login', $login);
             if ($stmt->execute()) {
-                $passwordHash=$stmt->fetch(PDO::FETCH_ASSOC)['motPasse'];
+                $joueurResults=$stmt->fetch(PDO::FETCH_ASSOC);
+                $passwordHash=$joueurResults['motPasse'];
                 if (!empty($passwordHash)) {
                     if (password_verify($password,$passwordHash)) {
-                        // redirection page personnelle
-                        $_SESSION['user_login']=$login;
+                        if ($joueurResults['estConnecte']) {
+                            $errors['connected']="Le joueur $login est déjà connecté";
+                        } else {
+                            $sql=
+                                'UPDATE joueurs
+                                SET estConnecte=1
+                                WHERE loginJoueur=:login_user'
+                            ;
+                            $stmt=$pdo->prepare($sql);
+                            $stmt->bindParam(':login_user',$login);
+                            $stmt->execute();
+                        
+                            // redirection page personnelle
+                            $_SESSION['user_login']=$login;
 
-                        // récupère idJoueur
-                        $sql=
-                        'SELECT idJoueur
-                        FROM joueurs
-                        WHERE loginJoueur=:1'
-                        ;
-                        $stmt=$pdo->prepare($sql);
-                        $stmt->bindParam(':1',$login);
-                        $stmt->execute();
-                        $result=$stmt->fetch(PDO::FETCH_ASSOC);
+                            // récupère idJoueur
+                            $sql=
+                            'SELECT idJoueur
+                            FROM joueurs
+                            WHERE loginJoueur=:1'
+                            ;
+                            $stmt=$pdo->prepare($sql);
+                            $stmt->bindParam(':1',$login);
+                            $stmt->execute();
+                            $result=$stmt->fetch(PDO::FETCH_ASSOC);
 
-                        $_SESSION['user_id']=$result['idJoueur'];
+                            $_SESSION['user_id']=$result['idJoueur'];
 
-                        header('Location: homepage.php');
-                        exit;
+                            header('Location: homepage.php');
+                            exit;
+                        }
                     } else {
                         $errors['password']='Mot de passe incorrect';
                     }
@@ -177,6 +193,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </section>
         <section>
             <h2>A l'attaque !</h2>
+            <?php if (!empty($errors['connected'])): ?>
+                <div>
+                    <p><?=$errors['connected']?></p>
+                </div>
+            <?php endif ?>
             <form action="" method="POST">
                 <input type="text" name="login" placeholder="JeanClaudeDuss" value="<?= !empty($savedContent['login']) ? $savedContent['login']:''; ?>">
                 <?= !empty($errors['login']) ? '<p>'.$errors['login'].'</p>': null; ?>
