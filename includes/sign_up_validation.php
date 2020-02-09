@@ -47,6 +47,6 @@ if (count($errors) == 0) {
     fillUserDefaultSpaceships($pdo, $vaisseaux, $idUser);
 
     // redirection page personnelle
-    header('Location: homepage.php');
+    header('Location: index.php?page=accueil');
     exit;   
 }

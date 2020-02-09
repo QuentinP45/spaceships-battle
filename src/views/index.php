@@ -12,7 +12,7 @@ if (!empty($_SESSION['user_id']) && $_GET['session-off']){
 
 // redirection accueil si user connecté
 } elseif (!empty($_SESSION['user_id'])) {
-    header('Location: homepage.php');
+    header('Location: index.php?page=accueil');
     exit;
 }
 
@@ -31,8 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // bufferisation
 ob_start();
-require_once('views/templates/sign_up_form.php');
-require_once('views/templates/sign_in_form.php');
+?>
+<section id="container">
+    <h1><?=$titre?></h1>
+<?php
+    require_once('views/templates/sign_up_form.php');
+    require_once('views/templates/sign_in_form.php');
+?>
+</section>
+<?php
 $content=ob_get_clean();
 
 require_once('views/templates/base_layout.php');

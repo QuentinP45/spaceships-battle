@@ -39,7 +39,7 @@ if (count($errors) == 0) {
                 $_SESSION['user_id']=$idUser;
                 
                 // redirection page personnelle
-                header('Location: homepage.php');
+                header('Location: index.php?page=accueil');
                 exit;
             }
         } else {
