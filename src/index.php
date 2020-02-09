@@ -1,21 +1,22 @@
 <?php
 // routing
-$request=$_SERVER['REQUEST_URI'];
+require_once('../includes/functions.php');
 
-$explodedUri=explode('/',$request);
-$requestedController=array_pop($explodedUri);
+$pages=['index','accueil'];
 
-switch($requestedController){
-    case '':
-        require_once(__DIR__ . '/controllers/indexController.php');
+$page='index';
+if (!empty($_GET['page'])) {
+    $param=test_input($_GET['page']);
+    if (in_array($param,$pages)) {
+        $page=$param;
+    }
+}
+
+switch($page){
+    case 'index':
+        require_once('controllers/indexController.php');
         break;
-    case 'index.php':
-        require_once(__DIR__ . '/controllers/indexController.php');
-        break;
-    case 'index.php?session-off=1':
-        require_once(__DIR__ . '/controllers/indexController.php');
-        break;
-    case 'homepage.php':
-        require_once(__DIR__ . '/controllers/homepageController.php');
+    case 'accueil':
+        require_once('controllers/homepageController.php');
         break;
 }
