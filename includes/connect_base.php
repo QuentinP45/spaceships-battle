@@ -66,6 +66,21 @@ function userStatusToConnected(PDO $pdo, string $loginJoueur) :bool
     return $stmt->execute();
 }
 
+function getStatsUser(PDO $pdo, string $userLogin) :object
+{
+    $sql=
+        'SELECT argent,niveau,experience,nbPointsReparation 
+        FROM joueurs 
+        WHERE loginJoueur=:userLogin'
+    ;
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':userLogin', $userLogin);
+    $stmt->execute();
+    $statsJoueur=$stmt->fetch(PDO::FETCH_OBJ);
+
+    return $statsJoueur;
+}
+
 // table vaisseaux
 function getSpaceShips(PDO $pdo) :array
 {
@@ -77,6 +92,43 @@ function getSpaceShips(PDO $pdo) :array
     $stmt->execute();
     $vaisseaux=$stmt->fetchAll(PDO::FETCH_OBJ);
 
+    return $vaisseaux;
+}
+
+function changeSpaceshipActivityStatus(PDO $pdo, int $statut, int $idUser, int $idVaisseau) :bool
+{
+    $sql=
+        'UPDATE joueurs_vaisseaux
+        SET activite=:1
+        WHERE idJoueur=:2
+        AND idVaisseau=:3'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$statut);
+    $stmt->bindParam(':2',$idUser);
+    $stmt->bindParam(':3',$idVaisseau);
+    
+    return $stmt->execute();
+}
+
+// table joueurs_vaisseaux
+function getUserPossessedSpaceships(PDO $pdo, $idUser) :array
+{
+    $sql=
+        'SELECT lienImage,joueurs_vaisseaux.idVaisseau,nomVaisseau,nomType,nbVictoires,nbDefaites,dommages,activite
+        FROM joueurs_vaisseaux
+            inner JOIN vaisseaux
+            ON joueurs_vaisseaux.idVaisseau = vaisseaux.idVaisseau
+            inner JOIN types
+            ON vaisseaux.idType = types.idType
+        WHERE idJoueur=:idUser
+        AND possede=1'
+    ;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':idUser', $idUser);
+    $vaisseaux=$stmt->fetchAll(PDO::FETCH_OBJ);
+    
     return $vaisseaux;
 }
 
