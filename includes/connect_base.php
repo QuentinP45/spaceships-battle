@@ -25,6 +25,35 @@ function getUserId(PDO $pdo,string $loginJoueur) :int
     return $joueur->idJoueur;
 }
 
+function getUserGold(PDO $pdo, int $userId) :int
+{
+    $sql=
+        'SELECT joueurs.argent 
+        FROM joueurs  
+        WHERE joueurs.idJoueur = :userId'
+        ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':userId',$userId);
+    $stmt->execute();
+    $argentJoueur=$stmt->fetch(PDO::FETCH_OBJ)->argent;
+
+    return $argentJoueur;
+}
+
+function setGold(PDO $pdo, int $reste, int $userId) :bool
+{
+    $sql=
+        'UPDATE `joueurs`
+        SET `argent` = :1
+        WHERE `idJoueur` = :2'
+        ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$reste,PDO::PARAM_INT);
+    $stmt->bindParam(':2',$userId);
+
+     return $stmt->execute();
+}
+
 function checkPassAndStatus(PDO $pdo, string $loginJoueur)
 {
     $sql=
@@ -112,7 +141,7 @@ function changeSpaceshipActivityStatus(PDO $pdo, int $statut, int $idUser, int $
 }
 
 // table joueurs_vaisseaux
-function getUserPossessedSpaceships(PDO $pdo, $idUser) :array
+function getUserPossessedSpaceships(PDO $pdo, int $idUser) :array
 {
     $sql=
         'SELECT lienImage,joueurs_vaisseaux.idVaisseau,nomVaisseau,nomType,nbVictoires,nbDefaites,dommages,activite
@@ -127,6 +156,7 @@ function getUserPossessedSpaceships(PDO $pdo, $idUser) :array
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':idUser', $idUser);
+    $stmt->execute();
     $vaisseaux=$stmt->fetchAll(PDO::FETCH_OBJ);
     
     return $vaisseaux;
@@ -162,4 +192,55 @@ function fillUserDefaultSpaceships(PDO $pdo,array $vaisseaux, $idJoueur) :bool
     }
 
     return $requestStatus;
+}
+
+// fonctions spécifiques shop
+function getAllSpaceshipsFromUsersSpaceships(PDO $pdo, int $userId) :array
+{
+    $sql=
+        'SELECT jv.idVaisseau,nomVaisseau,possede,disponibleAchat,niveau,prix,lienImage
+        FROM joueurs_vaisseaux as jv
+        INNER JOIN vaisseaux as v
+        ON jv.idVaisseau=v.idVaisseau
+        WHERE idJoueur = :1'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$userId);
+    $stmt->execute();
+    $vaisseaux=$stmt->fetchAll(PDO::FETCH_OBJ);
+    return $vaisseaux;
+}
+
+function buySpaceship(PDO $pdo, int $userId, $vaisseauChoisi) :bool
+{
+    $sql=
+        'UPDATE joueurs_vaisseaux
+        SET possede = 1
+        WHERE idJoueur = :1
+        AND idVaisseau = :2'
+        ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$userId);
+    $stmt->bindParam(':2',$vaisseauChoisi);
+    
+    return $stmt->execute();
+}
+
+function setSpaceshipsUnavailableToBuy(PDO $pdo, int $userId, int $vaisseauChoisi, int $niveauVaisseauChoisi) :bool
+{
+    $sql=
+        'UPDATE joueurs_vaisseaux as jv
+        INNER JOIN vaisseaux as v
+        ON jv.idVaisseau=v.idVaisseau
+        SET `disponibleAchat` = 0
+        WHERE jv.idJoueur = :1
+        AND jv.idVaisseau <> :2
+        AND `niveau` = :3'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$userId);
+    $stmt->bindParam(':2',$vaisseauChoisi);
+    $stmt->bindParam(':3',$niveauVaisseauChoisi);
+    
+    return $stmt->execute();
 }
