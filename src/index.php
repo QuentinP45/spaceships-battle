@@ -2,7 +2,7 @@
 // routing
 require_once('../includes/functions.php');
 
-$pages=['index','accueil','shop','details'];
+$pages=['index','accueil','shop','details','parametres'];
 
 $page='index';
 if (!empty($_GET['page'])) {
@@ -24,5 +24,8 @@ switch($page){
         break;
     case 'details':
         require_once('controllers/detailsController.php');
+        break;
+    case 'parametres':
+        require_once('controllers/parametersController.php');
         break;
 }
