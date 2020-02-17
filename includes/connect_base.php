@@ -110,6 +110,32 @@ function getStatsUser(PDO $pdo, string $userLogin) :object
     return $statsJoueur;
 }
 
+function replaceLogin(PDO $pdo, string $newLogin, int $idUser) :bool
+{
+    $sql=
+        'UPDATE joueurs
+        SET loginJoueur=:1
+        WHERE idJoueur=:2'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':1',$newLogin);
+    $stmt->bindParam(':2',$idUser);
+
+    return $stmt->execute();
+}
+
+function replacePassword(PDO $pdo, string $passwordHash, int $idUser)
+{
+    $sql=
+        'UPDATE joueurs 
+        SET motPasse=:new_pass
+        WHERE idJoueur=:id_joueur';
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':new_pass', $passwordHash);
+    $stmt->bindParam(':id_joueur', $idUser);
+    $stmt->execute();
+}
+
 // table vaisseaux
 function getSpaceShips(PDO $pdo) :array
 {
