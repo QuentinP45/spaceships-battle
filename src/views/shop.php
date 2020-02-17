@@ -28,7 +28,7 @@ ob_start();
                 <?php endif ?>
                     <p>Niveau: <?= $vaisseauFantome->niveau ?></p>
                     <p>Prix: <?= $vaisseauFantome->prix ?></p>
-                    <a href="details.php?id=<?=$vaisseauFantome->idVaisseau?>">
+                    <a href="index.php?page=details&id=<?=$vaisseauFantome->idVaisseau?>">
                         <button>Détails</button>
                     </a>
                 </section>
