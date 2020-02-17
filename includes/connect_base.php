@@ -140,6 +140,22 @@ function changeSpaceshipActivityStatus(PDO $pdo, int $statut, int $idUser, int $
     return $stmt->execute();
 }
 
+function getSpaceShipsAndTypes(PDO $pdo, int $idVaisseau) :object
+{
+    $sql=
+        'SELECT *
+        FROM vaisseaux
+        NATURAL JOIN types
+        where idVaisseau=:id_vaisseau'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':id_vaisseau',$idVaisseau);
+    $stmt->execute();
+    $detailsVaisseau=$stmt->fetch(PDO::FETCH_OBJ);
+
+    return $detailsVaisseau;
+}
+
 // table joueurs_vaisseaux
 function getUserPossessedSpaceships(PDO $pdo, int $idUser) :array
 {
@@ -244,3 +260,5 @@ function setSpaceshipsUnavailableToBuy(PDO $pdo, int $userId, int $vaisseauChois
     
     return $stmt->execute();
 }
+
+
