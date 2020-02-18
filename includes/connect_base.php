@@ -323,3 +323,40 @@ function getReadyOpponents(PDO $pdo, $idUser) :array
 
     return $joueursDisponibles;
 }
+
+// fonctions spécifiques battleground
+function getOpponentReadySpaceships(PDO $pdo, $idOpponent) :array
+{
+    $sql=
+        'SELECT loginJoueur,niveau,idVaisseau,nomVaisseau,rapidite,attaque,solidite,defense
+        FROM joueurs_vaisseaux
+        NATURAL JOIN joueurs
+        NATURAL JOIN vaisseaux
+        WHERE activite=1
+        AND idJoueur=:idOpponent';
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':idOpponent',$idOpponent);
+    $stmt->execute();
+    $vaisseauxAdversesDispos=$stmt->fetchAll(PDO::FETCH_OBJ);
+
+    return $vaisseauxAdversesDispos;
+}
+
+function getUsersReadySpaceshipsInfos(PDO $pdo, int $idUser) :array
+{
+    $sql=
+        'SELECT loginJoueur,niveau,idVaisseau,nomVaisseau,rapidite,attaque,solidite,defense
+        FROM joueurs_vaisseaux
+        NATURAL JOIN joueurs
+        NATURAL JOIN vaisseaux
+        WHERE activite=1
+        AND idJoueur=:idUser';
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':idUser',$idUser);
+    $stmt->execute();
+    $vaisseauxUserDispos=$stmt->fetchAll(PDO::FETCH_OBJ);
+
+    return $vaisseauxUserDispos;
+}
