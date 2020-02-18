@@ -204,6 +204,22 @@ function getUserPossessedSpaceships(PDO $pdo, int $idUser) :array
     return $vaisseaux;
 }
 
+function getUserSpaceShipsReadyForBattle(PDO $pdo, $idUser)
+{
+    $sql=
+        'SELECT *
+        FROM joueurs_vaisseaux
+        WHERE activite=1
+        AND idJoueur=:idUser'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':idUser',$idUser);
+    $stmt->execute();
+    $userEstDispo=$stmt->fetch(PDO::FETCH_OBJ);
+
+    return $userEstDispo;
+}
+
 // fonctions specifique index
 function userRegistration(PDO $pdo,string $userLogin,string $passwordHash) :bool
 {
@@ -287,4 +303,23 @@ function setSpaceshipsUnavailableToBuy(PDO $pdo, int $userId, int $vaisseauChois
     return $stmt->execute();
 }
 
+// fonctions spécifiques fight
+function getReadyOpponents(PDO $pdo, $idUser) :array
+{
+    $sql=
+        'SELECT idJoueur,loginJoueur,niveau
+        FROM joueurs
+        WHERE idJoueur in (
+            SELECT distinct idJoueur
+            FROM joueurs_vaisseaux
+            where activite=1
+            and idJoueur <> :idUser
+        )'
+    ;
+    $stmt=$pdo->prepare($sql);
+    $stmt->bindParam(':idUser',$idUser);
+    $stmt->execute();
+    $joueursDisponibles=$stmt->fetchAll(PDO::FETCH_OBJ);
 
+    return $joueursDisponibles;
+}
